@@ -1,0 +1,10 @@
+# Runtime dependencies. Install torch first, matching your CUDA version, from
+# https://pytorch.org; the index URL differs per platform, so no build is pinned here.
+torch>=2.0
+numpy>=1.24
+scipy>=1.10
+matplotlib>=3.7
+
+# Only for the finite element references in fem/
+scikit-fem>=8.0
+# optional, used by fem/pf_fem.py for the direct solves if present: pypardiso
