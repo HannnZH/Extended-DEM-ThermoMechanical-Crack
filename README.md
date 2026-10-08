@@ -14,6 +14,8 @@ extraction is checked by a sweep of the contour radius, and the crack advances a
 hoop stress angle when the energy release rate of the kink reaches the critical value at the
 crack-tip temperature.
 
+Preprint: https://arxiv.org/abs/2610.09433
+
 Contact: han.zhang7@unsw.edu.au
 
 ## Layout
@@ -93,9 +95,15 @@ the stationary thermal edge crack:
 
 If you use this code in work you publish, please cite the paper:
 
-    Han Zhang, Mehrisadat Makki Alamdari, Babak Shahbodagh, Mohammad Vahab, Cosmin Anitescu,
-    Timon Rabczuk, Elena Atroshchenko. An extended deep energy method for thermo-mechanical
-    crack propagation.
+    @article{zhang2026extended,
+      author  = {Zhang, Han and Makki Alamdari, Mehrisadat and Shahbodagh, Babak
+                 and Vahab, Mohammad and Anitescu, Cosmin and Rabczuk, Timon
+                 and Atroshchenko, Elena},
+      title   = {An extended deep energy method for thermo-mechanical crack
+                 propagation},
+      journal = {arXiv preprint arXiv:2610.09433},
+      year    = {2026}
+    }
 
 ## License
 
