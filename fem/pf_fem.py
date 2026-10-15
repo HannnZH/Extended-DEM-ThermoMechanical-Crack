@@ -32,10 +32,11 @@ not built. dT_final!=0 switches on the thermal load of the single-edge notched t
     ramp_rate to |dT| and then held; bottom edge fixed at T0; vertical edges insulated (natural).
   - Clock: t = time_per_delta*delta (default 1e-3 s/mm) and ramp_rate (default 1e8 K/s), the
     loading history of the proposed method.
-  - Coupling: elastic strain eps_e = eps - alpha_eff (T-T0) I. alpha_mode ps3d = plane strain
-    with the out-of-plane thermal strain, alpha_eff=(1+nu)alpha, which also enters the driving
-    energy as an out-of-plane channel | 2d = in-plane thermal strain with alpha. Thermal load
-    f_th = int g(phi) [C:eps_th]:eps(v) on the elasticity RHS; psi+ and the reaction use eps_e.
+  - Coupling: 2-D eigenstrain of the force eps_th = alpha_eff (T-T0) I. alpha_mode ps3d = plane
+    strain with the out-of-plane thermal strain, alpha_eff=(1+nu)alpha; the driving energy then
+    takes the 3-D elastic strain eps - alpha (T-T0) in every component, with ezz_e = -alpha (T-T0),
+    as an out-of-plane channel | 2d = in-plane thermal strain with alpha. Thermal load
+    f_th = int g(phi) [C:eps_th]:eps(v) on the elasticity RHS; the reaction uses eps - eps_th.
   - Per load step the thermal solve comes first and is then held fixed while u and phi are
     staggered.
   Run: python fem/pf_fem.py --example shear --dT_final 30 --l 0.01 --refine 8 --out runs_fem/shear_dT30
@@ -348,15 +349,19 @@ class FastThermalRHS:
 
 
 def psi_plus(iu, u, cfg, lam, mu, c_qp=0.0):
-    """Tensile driving energy density at quad points on the elastic strain eps_e = eps - eps_th
-       (eps_th = c I; ezz_e = -c for plane strain (ps3d), 0 for 2d). c_qp=0 => isothermal.
+    """Tensile driving energy density at quad points on the elastic strain eps_e = eps - a I
+       (a = alpha (T-T0); ezz_e = -a for plane strain (ps3d), 0 for 2d). c_qp=0 => isothermal.
        iso = full isotropic energy; hybrid = spectral tension part (Miehe et al.).
        lam, mu scalars (homogeneous) or (NE,NQ) fields (FGM)."""
     du = iu.interpolate(u).grad
-    exx = du[0, 0] - c_qp                                                          # elastic strain
-    eyy = du[1, 1] - c_qp
+    # c_qp = alpha_eff (T-T0) is the 2-D eigenstrain of the force. Under ps3d (alpha_eff =
+    # (1+nu) alpha) the 3-D elastic strain is eps - alpha dT in every component with eps_zz = 0,
+    # so the driving energy takes a = c/(1+nu) = alpha dT, not c.
+    a_qp = c_qp / (1.0 + cfg.nu) if cfg.alpha_mode == "ps3d" else c_qp
+    exx = du[0, 0] - a_qp                                                          # elastic strain
+    eyy = du[1, 1] - a_qp
     exy = 0.5 * (du[0, 1] + du[1, 0])
-    ezz = -c_qp if cfg.alpha_mode == "ps3d" else 0.0 * exx                         # out-of-plane
+    ezz = -a_qp if cfg.alpha_mode == "ps3d" else 0.0 * exx                         # out-of-plane
     tr = exx + eyy + ezz
     if cfg.split == "iso":
         return 0.5 * lam * tr ** 2 + mu * (exx ** 2 + eyy ** 2 + ezz ** 2 + 2.0 * exy ** 2)
